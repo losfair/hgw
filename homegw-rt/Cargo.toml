@@ -1,0 +1,25 @@
+[package]
+name = "homegw-rt"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1"
+libc = "0.2"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["json", "env-filter"] }
+tokio = { version = "1", default-features = false, features = ["macros", "net", "rt", "sync"] }
+tokio-stream = { version = "0.1", features = ["net"] }
+futures = "0.3"
+warp = "0.3"
+libloading = "0.8"
+once_cell = "1"
+linux-futex = "0.2"
+heapless = "0.7"
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["raw_value"] }
+
+[build-dependencies]
+bindgen = "0.68"

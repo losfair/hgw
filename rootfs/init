@@ -1,0 +1,36 @@
+#!/bin/bash
+
+set -e
+
+mount -t proc proc /proc
+mount -t sysfs sysfs /sys
+mount -t devtmpfs devtmpfs /dev
+mount -t debugfs debugfs /sys/kernel/debug
+
+mkdir /dev/pts
+mount -t devpts devpts /dev/pts
+
+mkdir -p /vroot/bin /vroot/dev /vroot/dev/pts /vroot/etc /vroot/home /vroot/lib /vroot/mnt /vroot/opt /vroot/proc /vroot/run /vroot/sbin /vroot/srv /vroot/sys /vroot/tmp /vroot/usr /vroot/var
+mount -o bind /bin /vroot/bin
+mount -o bind /dev /vroot/dev
+mount -o bind /dev/pts /vroot/dev/pts
+mount -o bind /etc /vroot/etc
+mount -o bind /home /vroot/home
+mount -o bind /lib /vroot/lib
+#mount -o bind /mnt /vroot/mnt
+mount -o bind /opt /vroot/opt
+mount -o bind /proc /vroot/proc
+#mount -o bind /run /vroot/run
+mount -o bind /sbin /vroot/sbin
+mount -o bind /srv /vroot/srv
+mount -o bind /sys /vroot/sys
+#mount -o bind /tmp /vroot/tmp
+mount -o bind /usr /vroot/usr
+mount -o bind /var /vroot/var
+mount -o bind /run /vroot/run
+mount -t tmpfs -o size=32M,nr_inodes=256,mode=1777 tmpfs /vroot/tmp
+mkdir /vroot/tmp/user
+chown user:user /vroot/tmp/user
+
+#exec /usr/bin/setsid /sbin/agetty --autologin root -l /init2 ttymxc0 115200 vt102
+exec /init2 < /dev/null > /dev/console 2>&1

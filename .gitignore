@@ -1,0 +1,6 @@
+/build/
+/rootfs/homegw-init
+/rootfs/homegw-rt
+/rootfs/config.json
+
+/homegw-rt/target/

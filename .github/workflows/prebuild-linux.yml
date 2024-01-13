@@ -1,0 +1,54 @@
+name: prebuild-linux
+on:
+  push:
+    branches:
+      - prebuild-linux
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        submodules: "true"
+    - name: Install cosign
+      uses: sigstore/cosign-installer@v3.3.0
+      with:
+        cosign-release: 'v2.2.2'
+    - name: Install dependencies
+      run: |
+        set -e
+        sudo sed -i 's/# deb-src/deb-src/g' /etc/apt/sources.list
+        cat /etc/apt/sources.list
+        sudo apt-get update
+        sudo apt-get build-dep -y linux
+        sudo apt-get install -y gcc-arm-linux-gnueabi lzop
+    - name: Build Linux
+      run: |
+        set -e
+        mkdir -p build
+        touch ./build/rootfs.cpio
+        cd linux
+        export ARCH=arm
+        export CROSS_COMPILE=arm-linux-gnueabi-
+        make maglev_imx6_defconfig
+        make -j2
+        rm -rf .git
+        tar c . | lzop > ../build/linux.tar.lzo
+        ls -lash ../build/linux.tar.lzo
+    - name: Sign archive
+      run: |
+        cosign sign-blob -y --bundle ./build/linux.sig.json ./build/linux.tar.lzo
+    - name: Upload to R2
+      uses: shallwefootball/s3-upload-action@4350529f410221787ccf424e50133cbc1b52704e
+      with:
+        aws_key_id: ${{ secrets.R2_ACCESS_KEY_ID }}
+        aws_secret_access_key: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        aws_bucket: hgw-build
+        endpoint: https://33ec30ecf17c12fd7704767077b686a3.r2.cloudflarestorage.com
+        source_dir: build
+        destination_dir: linux/${{ github.run_id }}-${{ github.workflow_sha }}/
